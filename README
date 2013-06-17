@@ -1,0 +1,19 @@
+Project will take a directory of stuff (from talon?) and turn it into
+a video, which can be easily played on the display box using a video
+player on fullscreen and repeat.
+
+== USE ==
+
+buildshow.rb path/to/dir output.mpg config.txt
+
+Dir with all files in the form:
+###.MODE.filename.ext
+
+.scroll .kenburns .video .text (same # & name /or with .txt, applies on image, and otherwise would be an additional "slide")
+
+== INSTALL ==
+
+This requires image2mpeg, downloaded from here:
+http://www.gromeck.de/uploads/media/image2mpeg-1.02.tar.gz
+
+That requires libmagick++-dev to be built (using: ./configure && make).
