@@ -16,4 +16,8 @@ Dir with all files in the form:
 This requires image2mpeg, downloaded from here:
 http://www.gromeck.de/uploads/media/image2mpeg-1.02.tar.gz
 
+Note: image2mpeg has a common functions shell file which needs nicerun
+to be modified to return 0 on success, or else error detection doesn't
+work (it always returns 1). Also may need some PATH settings initially.
+
 That requires libmagick++-dev to be built (using: ./configure && make).

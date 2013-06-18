@@ -1,8 +1,18 @@
 #!/usr/bin/ruby
 
-IMAGE2MPEG = "image2mpeg"
+require 'ftools'
+
+$VERBOSE=true
+
+ENV_VARS=["PATH=/home/guest/image2mpeg-1.02/src/image2ppm/:/home/guest/image2mpeg-1.02/scripts/:#{ENV["PATH"]}"]
 FFMPEG = "ffmpeg"
 IMAGICK_CONVERT = "convert"
+IMAGE2MPEG = "image2mpeg"
+
+# TODO: implement config & such
+TRANSITION = 'FADE'
+TIME_PER_IMAGE = "2"
+TIME_PER_TRANSITION = "1"
 
 CONFIG = "config.txt"
 OUTPUT = "output.mpg"
@@ -35,7 +45,15 @@ class SlideShow
 
   def generate
     puts "Finding files in input directory: #{@dir}"
-    # @inputfiles = Dir.scan
+    Dir.mkdir(@workdir) unless File.exists?(@workdir)
+    nextvidimages = []
+    nextvidinputs = []
+    @inputfiles = Dir.foreach(@dir) do |file| # match?
+      nextvidimages << File.join(@dir, file) unless file.match(/^[.]/)
+    end
+    video = do_effect_job('kenburns', *nextvidimages)
+    nextvidinputs << video
+    return do_video_job(*nextvidinputs)
     # After finding all files:
     # + pairs up text with matching images &c through a hash.
     # + keys then are sorted.
@@ -48,9 +66,10 @@ class SlideShow
 
   def do_effect_job(effect, *files)
     puts "Creating effect movie of type #{effect}"
-    # do_system
-    # output to: mktemp @workdir
-    # return filename
+    f = @workdir + "/tmp.mpeg"
+    do_system(IMAGE2MPEG, "-e", "MPEG2ENC", "-n", "NTSC", "-m", "DVD", "--" + effect, "-o", f, '--transition', TRANSITION, "--time-per-image", TIME_PER_IMAGE, "--time-per-transition", TIME_PER_TRANSITION, *files)
+    # output to: mktemp @workdir # TODO: cleanup?
+    return f
   end
 
   def do_text_job(textfile, imagefile = nil)
@@ -62,8 +81,9 @@ class SlideShow
     # return filename
   end
 
-  def do_video_job
-    puts "Creating output movie: #{@dir}"
+  def do_video_job(*inputs)
+    puts "Creating output movie: #{@output}"
+    File.cp(inputs.first, @output)
     # TODO: http://ffmpeg.org/trac/ffmpeg/wiki/How%20to%20concatenate%20%28join,%20merge%29%20media%20files
     # do_system
     # dir & .work -> output to: @output
@@ -80,9 +100,12 @@ class SlideShow
   def do_system(*args)
     cmd = args.join(" ")
     if $VERBOSE
-      echo "-> #{cmd}"
+      puts "-> #{cmd}"
     end
-    system(*args) or die "Command failed: #{cmd}" # with err code..
+    system("env", *(ENV_VARS + args)) 
+    if $?.exitstatus != 0
+      die "Command failed (#{$?.exitstatus}): #{(ENV_VARS + [cmd]).join(" ")}" # with err code..
+    end
   end
 end
 
