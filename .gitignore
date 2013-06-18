@@ -2,6 +2,8 @@
 ex/.work
 ex/*.png
 ex/*.jpg
+ex/*.png.txt
+ex/*.jpg.txt
 ex/*.mpg
 ex/*.mpeg
 *~
